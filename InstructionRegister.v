@@ -9,7 +9,7 @@ output reg [15:0] IROut);
 
 always @(posedge Clock) 
 begin
-    if(Write) 
+    if(Write)  
     begin
         case (LH) 
         1'b0: IROut[7:0] <= I[7:0];

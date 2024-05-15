@@ -45,13 +45,13 @@ input Clock);
     case(MuxASel) 
         2'b00: MuxAOut = ALUOut;
         2'b01: MuxAOut = OutC;
-        2'b10: MuxAOut = MemOut;
+        2'b10: MuxAOut = {{8{1'b0}},MemOut[7:0]};
         2'b11: MuxAOut = {{8{IROut[7]}},IROut[7:0]};
     endcase
     case(MuxBSel) 
         2'b00: MuxBOut = ALUOut;
         2'b01: MuxBOut = OutC;
-        2'b10: MuxBOut = MemOut;
+        2'b10: MuxBOut = {{8{1'b0}},MemOut[7:0]};
         2'b11: MuxBOut = {{8{IROut[7]}},IROut[7:0]};
     endcase
     case(MuxCSel) 

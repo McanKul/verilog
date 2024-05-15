@@ -11,8 +11,6 @@ output reg [3:0] FlagsOut);
 
 reg carry;
     always @(*)
-    begin
-        if(WF)
         begin
             case(FunSel)
                 5'b00000: ALUOut[7:0] = A[7:0];
@@ -51,7 +49,6 @@ reg carry;
                 
                 
             endcase
-        end
     end
     always @(posedge Clock)
     begin
