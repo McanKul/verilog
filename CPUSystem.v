@@ -67,8 +67,8 @@ always @( posedge Clock)
        begin  
            if(Reset)begin
             T <= 8'd1;
-            _ALUSystem.RF.R1.Q <= 16'd3;
-            _ALUSystem.RF.R2.Q <= 16'd0;
+            _ALUSystem.RF.R1.Q <= 16'd9;
+            _ALUSystem.RF.R2.Q <= 16'd6;
             _ALUSystem.RF.R3.Q <= 16'd0;
             _ALUSystem.RF.R4.Q <= 16'd0;
             _ALUSystem.RF.S1.Q <= 16'd0;
@@ -76,7 +76,6 @@ always @( posedge Clock)
             _ALUSystem.RF.S3.Q <= 16'd0;
             _ALUSystem.RF.S4.Q <= 16'd0;
             _ALUSystem.ARF.PC.Q <= 16'd0;
-            _ALUSystem.ARF.AR.Q <= 16'd10;
             ALU_WF = 1'b0;
             end            
       end
@@ -122,7 +121,7 @@ always @ (posedge T[0])
 always @ (posedge T[1])
         begin
         
-            //pc yi bir arttýr
+            //pc yi bir artt?r
             ARF_RegSel = 3'b011;
             ARF_FunSel = 3'b001;
             ARF_OutDSel = 2'b00;
@@ -140,13 +139,11 @@ always @ (posedge T[2]) begin
             IR_Write = 1'b0;
             decoding = _ALUSystem.IR.IROut[15:10];
             D[decoding] = 1'b1;
-            $display(D[33]);
-            if(D[16:5]==13'd0 || D[29:21]==1'd0) begin
+            if(D[16:5]!=13'd0 || D[29:21]!=1'd0) begin
                 {ALU_WF,DSTREG,SREG1,SREG2} = _ALUSystem.IR.IROut[9:0];
             end else begin
                 {RSEL,ADDRESS} = _ALUSystem.IR.IROut[9:0];
             end
-            
             if(D[2:0] != 3'd0) begin
 
                 RF_ScrSel = 4'b0111; 
@@ -183,18 +180,21 @@ always @ (posedge T[2]) begin
                ARF_FunSel = 3'b000;
                
                //dec and inc and movs 
-            end else if((D[6:5] != 0)||D[18]) begin
+            end else if((D[6:5] != 2'd0)||D[24]==1'b1) begin
                 ALU_FunSel = 5'b10000;
-                if(D[18]==1) ALU_WF = 1'b1;
+                if(D[24]==1'b1)
+                begin
+                 ALU_WF = 1'b1;
+                 end
                 case(SREG1)
                     3'b000: ARF_OutDSel = 2'b00;
                     3'b001: ARF_OutDSel = 2'b01;
                     3'b010: ARF_OutDSel = 2'b10;
                     3'b011: ARF_OutDSel = 2'b11;
                     3'b100: RF_OutASel = 3'b000;
-                    3'b100: RF_OutASel = 3'b001;
-                    3'b100: RF_OutASel = 3'b010;
-                    3'b100: RF_OutASel = 3'b011;
+                    3'b101: RF_OutASel = 3'b001;
+                    3'b110: RF_OutASel = 3'b010;
+                    3'b111: RF_OutASel = 3'b011;
                 endcase
                 case(DSTREG)
                     3'b000: ARF_RegSel = 3'b011;
@@ -219,7 +219,7 @@ always @ (posedge T[2]) begin
                     MuxASel = 2'b00;
                     RF_FunSel = 3'b010;
                 end
-                if(D[18]) begin
+                if(D[24]) begin
                     xd = 1'b1;
                 end
                 
@@ -244,35 +244,39 @@ always @ (posedge T[2]) begin
                   endcase  
                   
                   //2 li sourcelilar
-            end else if((D[13:12] !=0)&&(D[16:15] !=0) && (D[29:25] !=0) &&(D[23:21!=0]))begin
+            end else if((D[13:12] !=0)||(D[16:15] !=0) || (D[29:25] !=0) ||(D[23:21!=0]))begin
+
                   RF_ScrSel = 4'b0111;
+                  RF_RegSel = 4'b1111;
                   RF_FunSel = 3'b010;
                   ALU_FunSel = 5'b10000;
-                  if((D[29:25] !=0) &&(D[23:21!=0]))
+                  if((D[29:25] !=0) ||(D[23:21!=0]))
                   begin 
-                    ALU_WF = 1'B1;
+                    ALU_WF = 1'b1;
                   end
                   case(SREG1)
-                      3'b000: ARF_OutDSel = 2'b00;
-                      3'b001: ARF_OutDSel = 2'b01;
-                      3'b010: ARF_OutDSel = 2'b10;
-                      3'b011: ARF_OutDSel = 2'b11;
+                      3'b000: ARF_OutCSel = 2'b00;
+                      3'b001: ARF_OutCSel = 2'b01;
+                      3'b010: ARF_OutCSel = 2'b10;
+                      3'b011: ARF_OutCSel = 2'b11;
                       3'b100: RF_OutASel = 3'b000;
                       3'b101: RF_OutASel = 3'b001;
                       3'b110: RF_OutASel = 3'b010;
                       3'b111: RF_OutASel = 3'b011;
                    endcase
-                   case(SREG1<4)
-                        1'b1: MuxASel = 2'b01;
-                        1'b0: MuxASel = 2'b00;
-                   endcase
+                   if(SREG1<4) begin
+                        MuxASel = 2'b01;
+                        
+                   end else if(SREG1>3) begin
+                        MuxASel = 2'b00;
+                   end
                    
-                   
-            end else if(D[17] && D[20]) begin
-                if(D[20] ==1 )begin
+               
+            end else if(D[17]==1'b1 || D[20]==1'b1) begin
+                if(D[20] == 1 )begin
                       RF_FunSel = 3'b101;
                 end else if (D[17] ==1) begin
-                      RF_FunSel = 3'b101;
+                      RF_FunSel = 3'b110;
                 end
                 MuxASel = 2'b11;
                 case (RSEL)
@@ -428,20 +432,20 @@ always @ (posedge T[3])
               xd = 1'b1;
               
               
-        end else if((D[13:12] !=0)&&(D[16:15] !=0) && (D[29:25] !=0) &&(D[23:21!=0]))begin
+        end else if((D[13:12] !=0)||(D[16:15] !=0) || (D[29:25] !=0) || (D[23:21!=0]))begin
            
             RF_ScrSel = 4'b1011;
             RF_FunSel = 3'b010;           
             ALU_FunSel = 5'b10000;
             case(SREG2)
-                3'b000: ARF_OutDSel = 2'b00;
-                3'b001: ARF_OutDSel = 2'b01;
-                3'b010: ARF_OutDSel = 2'b10;
-                3'b011: ARF_OutDSel = 2'b11;
+                3'b000: ARF_OutCSel = 2'b00;
+                3'b001: ARF_OutCSel = 2'b01;
+                3'b010: ARF_OutCSel = 2'b10;
+                3'b011: ARF_OutCSel = 2'b11;
                 3'b100: RF_OutASel = 3'b000;
-                3'b100: RF_OutASel = 3'b001;
-                3'b100: RF_OutASel = 3'b010;
-                3'b100: RF_OutASel = 3'b011;
+                3'b101: RF_OutASel = 3'b001;
+                3'b110: RF_OutASel = 3'b010;
+                3'b111: RF_OutASel = 3'b011;
              endcase
              case(SREG2<4)
                    1'b1: MuxASel = 2'b01;
@@ -485,7 +489,7 @@ always @ (posedge T[4])
               RF_ScrSel = 4'b1111;
               xd = 1'b1;
               
-            end else if((D[13:12] !=0)&&(D[16:15] !=0) && (D[29:25] !=0) &&(D[23:21!=0]))begin
+            end else if((D[13:12] !=0)||(D[16:15] !=0) || (D[29:25] !=0) ||(D[23:21!=0]))begin
                 RF_OutASel = 3'b100;
                 RF_OutBSel = 3'b101;
                 
@@ -534,10 +538,11 @@ always @ (posedge T[4])
                 ARF_RegSel = 3'b011;
                 ARF_FunSel = 3'b010;
                 xd = 1'b1;
+                
             end if(D[33]==1) begin
                 RF_ScrSel = 4'b1111;
                 ARF_RegSel = 3'b101;
-                ARF_FunSel = 3'b001;
+                ARF_FunSel = 3'b010;
             end
       end  
       
@@ -547,6 +552,7 @@ always @ (posedge T[5])
          Mem_CS = 1'b0;
          Mem_WR = 1'b1;
          ALU_FunSel = 5'b10000;
+         ARF_FunSel = 3'b001;
          case (RSEL)
             2'b00: RF_OutASel = 3'b000;
             2'b01: RF_OutASel = 3'b001;
@@ -559,6 +565,7 @@ always @ (posedge T[5])
 always @ (posedge T[6])
      begin 
         if(D[33]==1) begin
+             ARF_RegSel =3'b111;
              MuxCSel = 1'b1;
         end
     end 
@@ -566,6 +573,7 @@ always @ (posedge T[6])
 always @ (posedge T[7])
     begin 
           if(D[33]==1) begin
+              ARF_RegSel =3'b101;
               Mem_CS = 1'b1;
               RF_OutASel = 3'b100;
               MuxBSel = 2'b00;
