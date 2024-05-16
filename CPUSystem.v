@@ -284,7 +284,7 @@ always @ (posedge T[2]) begin
                  xd = 1'b1;
                  
                  
-            end else if(D[17]) begin
+            end else if(D[18]) begin
                 Mem_CS = 0;
                 Mem_WR = 0;
                 ARF_OutDSel = 2'b10;
@@ -298,7 +298,39 @@ always @ (posedge T[2]) begin
                       2'b11: RF_RegSel = 4'b1110;
                 endcase
                 RF_FunSel = 3'b101;
+                
+                
+            end else if(D[19]) begin
+                Mem_CS = 1'b0;
+                Mem_WR = 1'b1;
+                ALU_FunSel = 5'b10000;
+                case (RSEL)
+                     2'b00: RF_OutASel = 3'b000;
+                     2'b01: RF_OutASel = 3'b001;
+                     2'b10: RF_OutASel = 3'b010;
+                     2'b11: RF_OutASel = 3'b011;
+                 endcase
+                 MuxCSel = 1'b0;
+                 ARF_OutDSel = 2'b10;
+                 ARF_RegSel = 3'b101;
+                 ARF_FunSel = 3'b001;
+                 
+                 
+            end else if(D[30] == 1) begin
+                Mem_CS = 1'b0;
+                Mem_WR = 1'b1;
+                ALU_FunSel = 5'b10000;
+                ARF_OutDSel = 2'b11;
+                ARF_OutCSel = 2'b00;
+                ARF_RegSel = 3'b110;
+                ARF_FunSel = 3'b001;
+                MuxASel = 2'b01;
+                RF_ScrSel = 4'b0111;
+                RF_FunSel = 3'b010;
+                RF_OutASel = 3'b100;
+                MuxCSel = 1'b0; 
             end
+            
         end
 
  
@@ -393,10 +425,19 @@ always @ (posedge T[3])
                    1'b0: MuxASel = 2'b00;
              endcase
              
-        end else if(D[17]) begin
+        end else if(D[18]) begin
                ARF_FunSel = 3'b000;
                RF_FunSel = 3'b110;
                xd = 1'b1;
+               
+        end else if(D[19]) begin
+            MuxCSel = 1'b1;
+            ARF_FunSel = 3'b000;
+            xd = 1'b1;
+            
+        end else if(D[30] == 1) begin
+              ARF_FunSel = 3'b000;
+              MuxCSel = 1'b1;
         end
    end
    
@@ -445,6 +486,19 @@ always @ (posedge T[4])
                     RF_FunSel = 3'b010;
                     end
                 endcase
+                xd = 1'b1;
+                
+            end else if(D[30] == 1) begin
+                Mem_CS = 1'b1;
+                ARF_RegSel = 3'b011;
+                case (RSEL)
+                       2'b00: RF_OutASel = 3'b000;
+                       2'b01: RF_OutASel = 3'b001;
+                       2'b10: RF_OutASel = 3'b010;
+                       2'b11: RF_OutASel = 3'b011;
+                endcase
+                MuxBSel = 2'b00;
+                ARF_FunSel = 3'b010;
                 xd = 1'b1;
             end
       end        
