@@ -250,7 +250,7 @@ always @ (posedge T[2]) begin
                   RF_RegSel = 4'b1111;
                   RF_FunSel = 3'b010;
                   ALU_FunSel = 5'b10000;
-                  if((D[29:25] !=0) ||(D[23:21!=0]))
+                  if((D[29:25] !=0) ||(D[23:21]!=0))
                   begin 
                     ALU_WF = 1'b1;
                   end
